@@ -1,0 +1,218 @@
+﻿@model OrdenCrearVM
+
+<h2>Crear Nueva Orden de Compra</h2>
+
+<form asp-action="Create" method="post">
+    <div class="row">
+
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="Orden_FechaOrden">Fecha de Orden:</label>
+                <input type="date" class="form-control" id="FechaOrden" name="Orden.FechaOrden" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="Orden_FechaPago">Fecha de Pago:</label>
+        <input type="date" class="form-control" id="FechaPago" name="Orden.FechaPago" required>
+    </div>
+
+    <div class="form-group">
+        <label for="Orden_Terminos">Términos:</label>
+        <input type="text" class="form-control" id="Terminos" name="Orden.Terminos" required>
+    </div>
+
+    <div class="form-group">
+        <label for="Orden_FormaPago">Forma de Pago:</label>
+        <input type="text" class="form-control" id="FormaPago" name="Orden.FormaPago" required>
+    </div>
+
+    <div class="form-group">
+        <label for="NitProveedor">Proveedor:</label>
+        <select asp-items="@ViewBag.Proveedores" class="form-control" id="NitProveedor" name="Orden.NitProveedor">
+            <option value="">-- Seleccione --</option>
+        </select>
+    </div>
+
+
+    <div class="form-group">
+        <label for="idArticulo">Articulo:</label>
+        <select asp-items="@ViewBag.Articulos" class="form-control" id="idArticulo" name="idArticulo" onchange="onProductChange()">
+            <option value="">-- Seleccione --</option>
+
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="PrecioUnitario">Precio Unitario:</label>
+        <input type="number" class="form-control" id="PrecioUnitario" name="PrecioUnitario" onchange="calcularSubtotal()">
+    </div>
+
+    <div class="form-group">
+        <label for="Cantidad">Cantidad:</label>
+        <input type="number" class="form-control" id="Cantidad" name="Cantidad" onchange="calcularSubtotal()">
+    </div>
+
+    <div class="form-group">
+        <label for="Subtotal">Subtotal:</label>
+        <input type="text" class="form-control" id="Subtotal" name="Subtotal" readonly>
+    </div>
+    <button type="button" class="btn btn-outline-primary" onclick="agregarDetalle()">Agregar Detalle</button>
+
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>Articulo</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody id="detalles">
+            <!-- Aquí se agregarán los detalles -->
+        </tbody>
+    </table>
+
+
+    <button type="button" class="btn btn-success" onclick="grabarOrden()">Guardar Orden</button>
+</form>
+
+
+@section Scripts {
+    <script>
+        var productos = @Html.Raw(Json.Serialize(ViewBag.Articulos));
+        var detallesOrden = [];
+
+        function onProductChange() {
+            var selectedProductId = $("#idArticulo").val();
+            var selectedProduct = productos.find(p => p.value == selectedProductId);
+            if (selectedProduct) {
+                // $("#PrecioUnitario").val(selectedProduct.precio);
+                var precio = $("#PrecioUnitario").val();
+                var cantidad = $("#Cantidad").val();
+
+                if (precio > 0 && cantidad > 0) {
+                    calcularSubtotal();
+                }
+
+            } else {
+                $("#PrecioUnitario").val("");
+                $("#Cantidad").val("");
+                $("#Subtotal").val("");
+            }
+        }
+
+        function calcularSubtotal() {
+            var precioUnitario = parseFloat($("#PrecioUnitario").val()) || 0;
+            var cantidad = parseFloat($("#Cantidad").val()) || 0;
+            if (cantidad > 0 && precioUnitario > 0) {
+                var subtotal = precioUnitario * cantidad;
+                $("#Subtotal").val(subtotal.toFixed(2));
+            }
+            else {
+                $("#Subtotal").val("");
+            }
+        }
+
+        function agregarDetalle() {
+            var selectedProductId = $("#idArticulo").val();
+            var selectedProduct = productos.find(p => p.value == selectedProductId);
+
+            var cantidad = parseFloat($("#Cantidad").val()) || 0;
+            var precio = $("#PrecioUnitario").val() || 0;
+
+            if (selectedProduct && cantidad > 0 && precio > 0) {
+                var subtotal = parseFloat($("#Subtotal").val()) || 0;
+
+                var detalleHtml = `
+                                                                                                    <tr>
+                                                                                                                <td>${selectedProduct.text}</td>
+                                                                                                        <td>${cantidad}</td>
+                                                                                                        <td>${precio}</td>
+                                                                                                        <td>${subtotal.toFixed(2)}</td>
+                                                                                                    </tr>`;
+                let detalle = {
+                    Id: 0,
+                    OrdenId: 0,
+                    ArticuloId: selectedProductId,
+                    cantidad: cantidad,
+                    precioUnidad: precio
+                };
+                this.detallesOrden.push(detalle);
+                $("#detalles").append(detalleHtml);
+                $("#PrecioUnitario").val("");
+                $("#Cantidad").val("");
+                $("#Subtotal").val("");
+                $("#idArticulo").val('');
+
+            }
+        }
+
+
+        function grabarOrden() {
+            url = "@Url.Action("Create", "OrdenDeCompra")";
+            if (!this.detallesOrden.length > 0 || this.detallesOrden == undefined || this.detallesOrden == null) {
+                return;
+            }
+            nitProveedor = $("#NitProveedor").val();
+            FechaOrden = $("#FechaOrden").val();
+            FechaPago = $("#FechaPago").val();
+            Terminos = $("#Terminos").val();
+            FormaPago = $("#FormaPago").val();
+
+            if (nitProveedor == "" || nitProveedor == 0 || nitProveedor == undefined || nitProveedor == null) {
+                return;
+            }
+            if (FechaOrden == "" || FechaOrden == 0 || FechaOrden == undefined || FechaOrden == null) {
+                return;
+            }
+            if (FechaPago == "" || FechaPago == 0 || FechaPago == undefined || FechaPago == null) {
+                return;
+            }
+            if (Terminos == "" || Terminos == 0 || Terminos == undefined || Terminos == null) {
+                return;
+            }
+            if (FormaPago == "" || FormaPago == 0 || FormaPago == undefined || FormaPago == null) {
+                return;
+            }
+
+            const nuevaOrden = {
+                orden:{
+                    nitProveedor: nitProveedor,
+                    fechaOrden: FechaOrden,
+                    fechaPago: FechaPago,
+                    terminos: Terminos,
+                    formaPago: FormaPago
+                },
+                detalles: this.detallesOrden
+            };
+            console.log('Posteando...');
+            console.log(nuevaOrden);
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json; charset=utf-8" },
+                body: JSON.stringify(nuevaOrden)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Si el POST fue exitoso, redirigir al index.
+                        const urlIndex = "@Url.Action("Index", "OrdenDeCompra")";
+                        window.location.href = urlIndex;
+
+                    } else {
+                        const urlIndex = "@Url.Action("Error", "Home","Ocurrió un error al crear la Orden")";
+                        window.location.href = urlIndex;
+                    }
+                })
+                .catch(error => {
+                    // En caso de error en la solicitud o procesamiento de la respuesta
+                    console.error("Error en la solicitud:", error);
+                    const urlIndex = "@Url.Action("Error", "Home","Ocurrió un error al crear la Orden")";
+                    window.location.href = urlIndex;
+                });
+        };
+    </script>
+}

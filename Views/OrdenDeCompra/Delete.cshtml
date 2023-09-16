@@ -1,0 +1,9 @@
+﻿@model OrdenCrearVM
+
+<h2 class="text-danger">¿Esta seguro de eliminar la orden @Model.Orden.Id ?</h2>
+<form asp-action="Delete" method="post">
+    <input asp-for="@Model.Orden.Id" hidden="true" />
+
+    <a class="btn btn-secondary mr-1" asp-action="Index">Volver</a>
+    <button type="submit" class="btn btn-danger mr-1">Confirmar</button>
+</form>

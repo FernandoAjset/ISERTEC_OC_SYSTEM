@@ -1,0 +1,57 @@
+﻿@model IEnumerable<OrdenDeCompra>;
+
+<a class="btn btn-success" asp-action="Create">Agregar</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                Id
+            </th>
+            <th>
+                Fecha
+            </th>
+            <th>
+                Fecha de pago
+            </th>
+            <th>
+                Nit Proveedor
+            </th>
+            <th>
+                Total
+            </th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var orden in Model)
+        {
+            <tr>
+                <td>
+                    @orden.Id
+                </td>
+                <td>
+                    @orden.FechaOrden
+                </td>
+                <td>
+                    @orden.FechaPago
+                </td>
+                <td>
+                    @orden.NitProveedor
+                </td>
+                <td>
+                    @orden.Total
+                </td>
+                <td>
+                    <a href="@Url.Action("Imprimir", "OrdenDeCompra", new { id = orden.Id })" class="btn btn-outline-success">
+                        <i class="bi bi-printer mr-1"></i> Imprimir 
+                    </a>
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@orden.Id">
+                        <i class="bi bi-trash"></i> Borrar
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+
+</table>

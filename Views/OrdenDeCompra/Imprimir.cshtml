@@ -1,0 +1,44 @@
+﻿@model OrdenCrearVM
+
+<h2>
+    Orden @Model.Orden.Id
+</h2>
+
+<p>Fecha: @Model.Orden.FechaOrden</p>
+<p>Fecha Pago: @Model.Orden.FechaPago</p>
+
+<p>NIT Proveedor: @Model.Orden.NitProveedor</p>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Articulo</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var detalle in Model.Detalles)
+        {
+            <tr>
+                <td>@detalle.Descripcion</td>
+                <td>@detalle.Cantidad</td>
+                <td>@detalle.PrecioUnidad</td>
+                <td>@Math.Round(detalle.Cantidad *detalle.PrecioUnidad,2)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Total Orden: @Model.Orden.Total</p>
+<button type="button" class="btn btn-primary" onclick="imprimirDocumento()">Imprimir</button>
+
+@section Scripts {
+    <script>
+        function imprimirDocumento() {
+            window.print();
+        }
+    </script>
+        }
